@@ -3,46 +3,44 @@ import streamlit as st
 import re
 
 st.set_page_config(page_title="Skype Contact Filter", layout="wide")
-
 st.title("📒 Skype Contact Filter Tool")
+
+# Define the path to the built-in contact CSV
+CONTACT_FILE = "contacts.csv"
 
 # Tags to filter
 TAGS = ["+mini", "+hdy", "+smx", "+pmx", "+cape", "+med", "+atl", "+rsea",
         "+safr", "+pg", "+wci", "+eci", "+seas", "+feast", "+nopac", "+aus", "+aust"]
 
-# Upload file
-uploaded_file = st.file_uploader("Upload Skype Contacts CSV", type=["csv"])
+# Load the included contacts CSV
+df = pd.read_csv(CONTACT_FILE)
+df["display_name"] = df["display_name"].astype(str).str.lower()
 
-# Select filter mode
+# Filter mode
 filter_mode = st.radio("Filter Mode", ["AND", "OR"], horizontal=True)
 
-# Select tags
-selected_tags = st.multiselect("Tags to Filter", TAGS)
+# Tag checkboxes
+st.markdown("### Select Tags to Filter")
+selected_tags = []
+cols = st.columns(6)
+for i, tag in enumerate(TAGS):
+    if cols[i % 6].checkbox(tag):
+        selected_tags.append(tag)
 
-if uploaded_file and selected_tags:
-    df = pd.read_csv(uploaded_file)
-
-    if "display_name" not in df.columns:
-        st.error("CSV must contain a 'display_name' column.")
+# Filter contacts
+if selected_tags:
+    if filter_mode == "AND":
+        for tag in selected_tags:
+            df = df[df["display_name"].str.contains(re.escape(tag))]
     else:
-        df["display_name"] = df["display_name"].astype(str).str.lower()
+        pattern = "|".join(re.escape(tag) for tag in selected_tags)
+        df = df[df["display_name"].str.contains(pattern)]
 
-        # Detect country column
-        country_col = next((col for col in df.columns if "country" in col.lower()), None)
-        if not country_col:
-            df["country"] = "N/A"
-            country_col = "country"
+    st.success(f"Found {len(df)} matching contacts.")
+    st.dataframe(df[["display_name", "country"]], use_container_width=True)
 
-        if filter_mode == "AND":
-            for tag in selected_tags:
-                df = df[df["display_name"].str.contains(re.escape(tag))]
-        else:
-            pattern = "|".join(re.escape(tag) for tag in selected_tags)
-            df = df[df["display_name"].str.contains(pattern)]
-
-        st.success(f"Found {len(df)} matching contacts.")
-        st.dataframe(df[["display_name", country_col]].rename(columns={country_col: "country"}), use_container_width=True)
-
-        # Optional download
-        csv = df.to_csv(index=False)
-        st.download_button("📥 Download Filtered CSV", data=csv, file_name="filtered_contacts.csv", mime="text/csv")
+    # Download filtered CSV
+    csv = df[["display_name", "country"]].to_csv(index=False)
+    st.download_button("📥 Download Filtered CSV", data=csv, file_name="filtered_contacts.csv", mime="text/csv")
+else:
+    st.info("Select at least one tag to filter the contacts.")
