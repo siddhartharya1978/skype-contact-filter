@@ -42,10 +42,9 @@ if selected_tags:
         filtered_df = filtered_df[filtered_df["display_name"].str.contains(pattern)]
 
     st.success(f"Found {len(filtered_df)} matching contacts.")
-    st.dataframe(filtered_df[["display_name", "country"]], use_container_width=True)
-
-    # Download filtered CSV
-    csv = filtered_df[["display_name", "country"]].to_csv(index=False)
-    st.download_button("📥 Download Filtered CSV", data=csv, file_name="filtered_contacts.csv", mime="text/csv")
+    
+    st.markdown("### ✅ Tick off contacts as you check them:")
+    for i, row in filtered_df.iterrows():
+        st.checkbox(f"**{row['display_name'].title()}**  _( {row['country']} )_", key=f"contact_{i}")
 else:
     st.info("Select at least one tag to filter the contacts.")
