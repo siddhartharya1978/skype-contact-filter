@@ -4,14 +4,12 @@ import re
 
 st.set_page_config(page_title="Skype Tool + Charterer Matrix", layout="wide")
 
-# Define file paths
 CONTACT_FILE = "contacts.csv"
 MATRIX_FILE = "channel_matrix.xlsx"
 
-# ---------- TABS ----------
 tabs = st.tabs(["Contact Filter", "Channel Matrix"])
 
-# ---------- TAB 1: Contact Filter Tool ----------
+# TAB 1: Contact Filter Tool
 with tabs[0]:
     st.title("📒 Skype Contact Filter Tool")
 
@@ -48,7 +46,7 @@ with tabs[0]:
     else:
         st.info("Select at least one tag to filter the contacts.")
 
-# ---------- TAB 2: Charterer-Operator Matrix ----------
+# TAB 2: Charterer-Operator Matrix
 with tabs[1]:
     st.title("📊 Channel Matrix Checker")
 
@@ -65,11 +63,11 @@ with tabs[1]:
 
             col1, col2 = st.columns(2)
             with col1:
-                st.success(f"✅ Operators who work {selected_charterer}'s cargoes:")
+                st.success(f"✅ Operators who work with us for {selected_charterer}'s cargoes (CRH TRADING):")
                 for name in yes_ops:
                     st.markdown(f"- **{name}**")
             with col2:
-                st.error(f"❌ Operators who DO NOT work {selected_charterer}'s cargoes:")
+                st.error(f"❌ Operators who won't work with us for {selected_charterer}'s cargoes (CRH TRADING):")
                 for name in no_ops:
                     st.markdown(f"- {name}")
     except Exception as e:
