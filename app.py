@@ -4,26 +4,27 @@ import re
 
 st.set_page_config(page_title="Skype Tool + Charterer Matrix", layout="wide")
 
-# ---------- TAB 1: Contact Filter Tool ----------
+# Define file paths
+CONTACT_FILE = "contacts.csv"
+MATRIX_FILE = "channel_matrix.xlsx"
 
-with st.tabs(["Contact Filter", "Channel Matrix"])[0]:
+# ---------- TABS ----------
+tabs = st.tabs(["Contact Filter", "Channel Matrix"])
+
+# ---------- TAB 1: Contact Filter Tool ----------
+with tabs[0]:
     st.title("📒 Skype Contact Filter Tool")
 
-    # Tags to filter
     TAGS = ["+mini", "+hdy", "+smx", "+pmx", "+cape", "+med", "+atl", "+rsea",
             "+safr", "+pg", "+wci", "+eci", "+seas", "+feast", "+nopac", "+aus", "+aust"]
 
-    # Load contacts file
-    CONTACT_FILE = "contacts.csv"
     df = pd.read_csv(CONTACT_FILE)
     df["display_name"] = df["display_name"].astype(str).str.lower()
     if "country" not in df.columns:
         df["country"] = "N/A"
 
-    # Filter mode
     filter_mode = st.radio("Filter Mode", ["AND", "OR"], horizontal=True)
 
-    # Tag checkboxes
     st.markdown("### Select Tags to Filter")
     selected_tags = []
     cols = st.columns(6)
@@ -31,7 +32,6 @@ with st.tabs(["Contact Filter", "Channel Matrix"])[0]:
         if cols[i % 6].checkbox(tag):
             selected_tags.append(tag)
 
-    # Filter logic
     if selected_tags:
         filtered_df = df.copy()
         if filter_mode == "AND":
@@ -48,12 +48,10 @@ with st.tabs(["Contact Filter", "Channel Matrix"])[0]:
     else:
         st.info("Select at least one tag to filter the contacts.")
 
-
-# ---------- TAB 2: Charterer-Operator Channel Matrix ----------
-with st.tabs(["Contact Filter", "Channel Matrix"])[1]:
+# ---------- TAB 2: Charterer-Operator Matrix ----------
+with tabs[1]:
     st.title("📊 Channel Matrix Checker")
 
-    MATRIX_FILE = "channel_matrix.xlsx"
     try:
         matrix_df = pd.read_excel(MATRIX_FILE)
         matrix_df = matrix_df.rename(columns={matrix_df.columns[0]: "Operator"})
@@ -75,5 +73,5 @@ with st.tabs(["Contact Filter", "Channel Matrix"])[1]:
                 for name in no_ops:
                     st.markdown(f"- {name}")
     except Exception as e:
-        st.warning("Could not load matrix file. Please ensure 'channel_matrix.xlsx' exists in the same directory.")
+        st.warning("Could not load matrix file. Please ensure 'channel_matrix.xlsx' exists.")
         st.text(f"Error: {e}")
